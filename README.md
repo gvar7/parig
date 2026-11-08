@@ -23,7 +23,7 @@ A Wordle-style word puzzle game built in Western Armenian, inspired by [Wordle �
 
 ### Desktop (Chrome/Edge/Firefox)
 
-1. Open `index.html` in your browser
+1. Open the hosted URL in your browser (PWA install and offline caching require the app to be served over HTTP/HTTPS — opening `index.html` directly from disk will run the game, but won't register the service worker)
 2. Go to **Settings** → **Apps** → **Install App** (or right-click → "Add to Home screen")
 3. The app will be installed and can be launched from your home screen
 
@@ -54,8 +54,8 @@ parig-pwa/
 | Correct | Ճիշտ է (Jisht e) |
 | Present | Կա (Ka) |
 | Absent | Անկապ է (Ankap e) |
-| Win! | Հաղթանակ! (Haghnak!) |
-| Restart | Վերանորոգել (Veranorogel) |
+| Win! | Հաղթանակ! (Haghtanak!) |
+| New game | Նոր խաղ (Nor khagh) |
 
 ## Game Words
 
@@ -69,7 +69,7 @@ The game uses a curated list of 5-letter English words including:
 - OCEAN, PARTY, PIZZA, PHONE, PLANE
 - PLANT, PLATE, POWER, RADIO, RIVER
 - ROBOT, SHIRT, SHOES, SLEEP, SMILE
-- SNACK, SPACE, SPONGE, STORM, TABLE
+- SNACK, SPACE, STONE, STORM, TABLE
 - TIGER, TOAST, TRAIN, TRUCK, VOICE
 - WATER, WATCH, WHOLE, WOMAN, WORLD
 - WRITE, YOUTH
