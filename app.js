@@ -1,4 +1,6 @@
 // Parig - Պարիգ: Western Armenian Wordle Clone
+console.log("=== PARIG PWA LOADING ===");
+
 const WORDS = {
   // Common 5-letter words (simplified for demo)
   common: [
@@ -46,10 +48,12 @@ class ParigGame {
   }
 
   init() {
+    console.log("=== INITIALIZING GAME ===");
     this.createBoard();
     this.createKeyboard();
     this.setupEventListeners();
     this.startNewGame();
+    console.log("=== GAME READY ===");
   }
 
   createBoard() {
