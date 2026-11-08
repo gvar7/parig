@@ -1,5 +1,5 @@
 // Service Worker for Parig PWA
-const CACHE_NAME = 'parig-pwa-v5';
+const CACHE_NAME = 'parig-pwa-v6';
 const FONT_CACHE = 'parig-fonts-v1';
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 const urlsToCache = [
@@ -33,19 +33,22 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
 
   // Web fonts: cache on first use so the game looks the same offline
   if (FONT_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.open(FONT_CACHE).then(cache =>
-        cache.match(event.request).then(cached => {
+        cache.match(request).then(cached => {
           if (cached) {
             return cached;
           }
-          return fetch(event.request).then(response => {
+          return fetch(request).then(response => {
             if (response.ok || response.type === 'opaque') {
-              cache.put(event.request, response.clone());
+              cache.put(request, response.clone());
             }
             return response;
           });
@@ -55,13 +58,29 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  if (url.origin !== self.location.origin) return;
+
+  // App files: network first so a new version shows up right away,
+  // falling back to the cached copy when offline.
   event.respondWith(
-    caches.match(event.request)
+    fetch(request)
       .then(response => {
-        if (response) {
-          return response;
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
         }
-        return fetch(event.request);
+        return response;
       })
+      .catch(() =>
+        caches.match(request).then(cached => {
+          if (cached) {
+            return cached;
+          }
+          if (request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return Response.error();
+        })
+      )
   );
 });

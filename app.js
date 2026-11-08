@@ -47,6 +47,7 @@ const WORDS = {
     restart: "Նոր խաղ",
     playAgain: "Խաղալ նորից",
     share: "Կիսուիլ",
+    finishFirst: "Նախ խաղը աւարտէ",
     copied: "Պատճէնուեցաւ",
     copyFailed: "Պատճէնումը չյաջողեցաւ"
   }
@@ -305,8 +306,9 @@ class ParigGame {
   }
 
   setShareEnabled(enabled) {
+    // The button stays clickable so it can explain itself mid-game; it is only dimmed.
     const btn = document.getElementById("share-btn");
-    btn.disabled = !enabled;
+    btn.classList.toggle("dim", !enabled);
     btn.classList.toggle("ready", enabled);
   }
 
@@ -321,7 +323,10 @@ class ParigGame {
   }
 
   async share() {
-    if (this.active || this.results.length === 0) return;
+    if (this.active || this.results.length === 0) {
+      this.showToast(WORDS.ui.finishFirst);
+      return;
+    }
 
     const text = this.buildShareText();
 

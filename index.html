@@ -2,25 +2,25 @@
 <html lang="hyw">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#3a7ea2">
   <meta name="description" content="Parig - Պարիգ: Արեւմտահայերէն բառ գուշակելու խաղ (Wordle)">
   <title>Parig - Պարիգ</title>
-  
+
   <!-- PWA Manifest -->
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icon-192.svg">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Parig - Պարիգ">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 
-  <!-- Letter font -->
+  <!-- Font (Google Sans includes the Armenian alphabet) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500;700&display=swap">
 
   <!-- Styles -->
   <style>
@@ -40,37 +40,94 @@
       --gray6: #e3e2e1;
       --white: #ffffff;
       --black: #000000;
-      --letter-font: "Noto Sans Armenian", "Arial Unicode MS", "Segoe UI", sans-serif;
+      --font: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+      /* Vertical space used by everything except the board tiles
+         (header, message, keyboard, hint, paddings, board gaps) */
+      --chrome: 23.5rem;
+      --gap: 0.35rem;
+      --tile-max: 3.75rem;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+      /* Tiles are as large as both the screen width and height allow,
+         so the whole game fits on a phone screen without scrolling */
+      --tile: clamp(
+        1.75rem,
+        min(
+          calc((100vw - 2rem) / 5 - var(--gap)),
+          calc((100vh - var(--chrome) - var(--safe-top) - var(--safe-bottom)) / 6)
+        ),
+        var(--tile-max)
+      );
+    }
+
+    @supports (height: 100dvh) {
+      :root {
+        --tile: clamp(
+          1.75rem,
+          min(
+            calc((100vw - 2rem) / 5 - var(--gap)),
+            calc((100dvh - var(--chrome) - var(--safe-top) - var(--safe-bottom)) / 6)
+          ),
+          var(--tile-max)
+        );
+      }
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html, body {
+      height: 100%;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      font-family: var(--font);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      height: 100vh;
       background-color: var(--gray5);
       margin: 0;
       padding: 0;
+      overflow-y: auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @supports (height: 100dvh) {
+      body {
+        height: 100dvh;
+      }
     }
 
     .header {
       position: relative;
+      flex: none;
       border-bottom: 1px solid #d3d5da;
-      padding: 1rem 3.5rem;
-      width: 100%;
+      padding: calc(0.6rem + var(--safe-top)) 3.5rem 0.6rem;
       text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0.15rem 0 0;
+      font-size: 0.9rem;
+      color: var(--gray3);
     }
 
     .icon-btn {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      width: 2.75rem;
-      height: 2.75rem;
+      top: calc(0.6rem + var(--safe-top));
+      width: 2.6rem;
+      height: 2.6rem;
       border: none;
       border-radius: 50%;
       background-color: var(--main-color);
@@ -82,19 +139,26 @@
       transition: background-color 0.15s, opacity 0.15s, transform 0.15s;
     }
 
+    .icon-btn.left {
+      left: 0.75rem;
+    }
+
+    .icon-btn.right {
+      right: 0.75rem;
+    }
+
     .icon-btn svg {
-      width: 1.4rem;
-      height: 1.4rem;
+      width: 1.35rem;
+      height: 1.35rem;
       fill: currentColor;
     }
 
-    .icon-btn:hover:not(:disabled) {
+    .icon-btn:hover {
       background-color: var(--main-dark);
     }
 
-    .icon-btn:disabled {
-      opacity: 0.35;
-      cursor: default;
+    .icon-btn.dim {
+      opacity: 0.4;
     }
 
     .icon-btn.ready {
@@ -106,56 +170,31 @@
       50% { transform: scale(1.15); }
     }
 
-    #toast {
-      position: fixed;
-      top: 5.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--black);
-      color: var(--white);
-      padding: 0.6rem 1.1rem;
-      border-radius: 6px;
-      font-weight: bold;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-      z-index: 10000;
-    }
-
-    #toast.show {
-      opacity: 1;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      color: var(--black);
-    }
-
-    .subtitle {
-      margin-top: 0.25rem;
-      font-size: 1rem;
-      color: var(--gray3);
-    }
-
-    .game-container {
+    .game {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1rem 0;
+      justify-content: space-between;
+      padding: 0.25rem 0.25rem calc(0.5rem + var(--safe-bottom));
     }
 
     #message-container {
-      height: 1.5rem;
-      margin-bottom: 0.5rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .message {
-      font-size: 1.25rem;
-      font-weight: bold;
-      padding: 0.5rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.3rem 0.9rem;
       border-radius: 4px;
       text-align: center;
+      white-space: nowrap;
     }
 
     #message-correct {
@@ -175,17 +214,17 @@
 
     .board-container {
       display: grid;
-      gap: 0.4rem;
-      padding: 0.5rem;
+      gap: var(--gap);
+      padding: var(--gap);
       background-color: var(--black);
       border-radius: 4px;
     }
 
     .row {
       display: grid;
-      grid-template-columns: repeat(5, 3.5rem);
-      grid-auto-rows: 3.5rem;
-      gap: 0.4rem;
+      grid-template-columns: repeat(5, var(--tile));
+      grid-auto-rows: var(--tile);
+      gap: var(--gap);
     }
 
     .tile {
@@ -194,8 +233,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: var(--letter-font);
-      font-size: 1.75rem;
+      font-size: calc(var(--tile) * 0.5);
       font-weight: 700;
       text-transform: uppercase;
       transition: transform 0.1s;
@@ -221,49 +259,34 @@
       color: white;
     }
 
-    .tile[data-state="correct"].pop {
-      animation: pop 0.1s;
-    }
-
-    .tile[data-state="present"].pop {
-      animation: pop 0.1s;
-    }
-
-    .tile[data-state="absent"].pop {
-      animation: pop 0.1s;
-    }
-
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
     .keyboard-container {
-      margin-top: 1rem;
+      width: 100%;
+      max-width: 32rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
     }
 
     .keyboard-row {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
+      gap: 0.25rem;
     }
 
     .key {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: 2.75rem;
+      height: 2.75rem;
       background-color: var(--gray4);
       color: var(--white);
       border-radius: 0.3rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: var(--letter-font);
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       cursor: pointer;
-      height: 3rem;
-      min-width: 2.5rem;
-      padding: 0 0.5rem;
       user-select: none;
       transition: background-color 0.1s;
     }
@@ -281,31 +304,37 @@
     }
 
     .key.wide {
-      min-width: 4rem;
-      font-size: 0.8rem;
+      flex: 1.6 1 0;
+      max-width: 4.2rem;
+      font-size: 0.7rem;
     }
 
-    #restart-btn {
-      margin-top: 1rem;
-      padding: 0.75rem 2rem;
-      font-size: 1.25rem;
-      background-color: var(--main-color);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    #restart-btn:hover {
-      background-color: var(--main-dark);
-    }
-
-    .footer {
-      margin-top: auto;
-      padding: 1rem;
-      text-align: center;
+    .hint {
+      margin: 0;
+      font-size: 0.75rem;
       color: var(--gray3);
-      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    #toast {
+      position: fixed;
+      top: calc(4.5rem + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--black);
+      color: var(--white);
+      padding: 0.6rem 1.1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 10000;
+    }
+
+    #toast.show {
+      opacity: 1;
     }
 
     /* Animations */
@@ -348,68 +377,106 @@
       animation: flipAbsent 0.7s;
     }
 
-    /* Responsive */
-    @media (max-width: 500px) {
-      h1 { font-size: 2rem; }
-      .subtitle { display: none; }
-      .header { padding: 1rem 3rem; }
+    /* Larger screens */
+    @media (min-width: 501px) {
+      :root {
+        --chrome: 27rem;
+      }
+
+      .header {
+        padding-top: calc(0.9rem + var(--safe-top));
+        padding-bottom: 0.9rem;
+      }
+
+      h1 {
+        font-size: 2.4rem;
+      }
+
       .icon-btn {
-        top: 0.85rem;
-        right: 0.75rem;
-        width: 2.4rem;
-        height: 2.4rem;
+        top: calc(1rem + var(--safe-top));
+        width: 2.75rem;
+        height: 2.75rem;
       }
-      .row {
-        grid-template-columns: repeat(5, 3rem);
-        grid-auto-rows: 3rem;
+
+      .icon-btn.left {
+        left: 1rem;
       }
-      .tile { font-size: 1.5rem; }
-      .keyboard-row { gap: 0.25rem; }
+
+      .icon-btn.right {
+        right: 1rem;
+      }
+
       .key {
-        min-width: 1.9rem;
-        padding: 0 0.3rem;
-        font-size: 0.9rem;
+        height: 3.25rem;
       }
-      .key.wide {
-        min-width: 2.6rem;
-        font-size: 0.65rem;
+
+      .game {
+        padding: 0.75rem 1rem calc(1rem + var(--safe-bottom));
+      }
+
+      #toast {
+        top: calc(6.25rem + var(--safe-top));
+      }
+    }
+
+    /* Phones */
+    @media (max-width: 500px) {
+      .subtitle {
+        display: none;
+      }
+    }
+
+    /* Very short screens: drop the hint line */
+    @media (max-height: 640px) {
+      .hint {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
+  <header class="header">
+    <button id="restart-btn" class="icon-btn left" type="button" aria-label="Նոր խաղ" title="Նոր խաղ">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
     <h1>Parig - Պարիգ</h1>
     <p class="subtitle">Արեւմտահայերէն բառ գուշակելու խաղ (Wordle)</p>
-    <button id="share-btn" class="icon-btn" type="button" aria-label="Կիսուիլ" title="Կիսուիլ" disabled>
+    <button id="share-btn" class="icon-btn right dim" type="button" aria-label="Կիսուիլ" title="Կիսուիլ">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
     </button>
-  </div>
+  </header>
 
-  <div id="message-container"></div>
+  <main class="game">
+    <div id="message-container"></div>
+
+    <div class="board-container" id="board"></div>
+
+    <div class="keyboard-container" id="keyboard"></div>
+
+    <p class="hint">6 փորձ, 5 տառով բառ մը գտնելու համար: «ու»ն կը հաշուի երկու տառ՝ Ո + Ւ</p>
+  </main>
+
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <div class="game-container">
-    <div class="board-container" id="board"></div>
-    
-    <div class="keyboard-container" id="keyboard"></div>
-    
-    <button id="restart-btn">Նոր խաղ</button>
-  </div>
-
-  <div class="footer">
-    <p>Պարիգ՝ 6 փորձ, 5 տառով բառ մը գտնելու համար: «ու»ն կը հաշուի երկու տառ՝ Ո + Ւ</p>
-  </div>
-
   <script src="app.js"></script>
-  
+
   <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
+      // When a new version of the service worker takes over, reload once so
+      // the page that is showing is the new one too (not on the very first install).
+      const hadController = !!navigator.serviceWorker.controller;
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
           .then(registration => {
-            console.log('ServiceWorker registered:', registration);
+            console.log('ServiceWorker registered:', registration.scope);
           })
           .catch(error => {
             console.log('ServiceWorker registration failed:', error);
