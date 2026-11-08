@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hy">
+<html lang="hyw">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3a7ea2">
-  <meta name="description" content="Parig - Պարիգ: Անգլերեն բառերը գույներով պատճենելու խաղ (Wordle style)">
+  <meta name="description" content="Parig - Պարիգ: Արեւմտահայերէն բառ գուշակելու խաղ (Wordle)">
   <title>Parig - Պարիգ</title>
   
   <!-- PWA Manifest -->
@@ -231,7 +231,7 @@
 
     .footer {
       margin-top: auto;
-      padding: 1rem 0;
+      padding: 1rem;
       text-align: center;
       color: var(--gray3);
       font-size: 0.875rem;
@@ -286,15 +286,15 @@
         grid-auto-rows: 3rem;
       }
       .tile { font-size: 1.5rem; }
-      .keyboard-row { gap: 0.3rem; }
+      .keyboard-row { gap: 0.25rem; }
       .key {
         min-width: 1.9rem;
         padding: 0 0.3rem;
         font-size: 0.9rem;
       }
       .key.wide {
-        min-width: 2.8rem;
-        font-size: 0.7rem;
+        min-width: 2.6rem;
+        font-size: 0.65rem;
       }
     }
   </style>
@@ -302,7 +302,7 @@
 <body>
   <div class="header">
     <h1>Parig - Պարիգ</h1>
-    <p class="subtitle">Անգլերեն բառերը գույներով պատճենելու խաղ (Wordle style)</p>
+    <p class="subtitle">Արեւմտահայերէն բառ գուշակելու խաղ (Wordle)</p>
   </div>
 
   <div id="message-container"></div>
@@ -316,7 +316,7 @@
   </div>
 
   <div class="footer">
-    <p>Parig - Պարիգ: 6 հնարավորություն, 5 տառան բառ գույներով պատճենելու համար</p>
+    <p>Պարիգ՝ 6 փորձ, 5 տառով բառ մը գտնելու համար: «ու»ն կը հաշուի երկու տառ՝ Ո + Ւ</p>
   </div>
 
   <script src="app.js"></script>

@@ -1,7 +1,7 @@
 {
   "name": "Parig - Պարիգ",
   "short_name": "Parig",
-  "description": "Անգլերեն բառերը գույներով պատճենելու խաղ (Wordle style)",
+  "description": "Արեւմտահայերէն բառ գուշակելու խաղ (Wordle)",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",

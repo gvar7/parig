@@ -1,5 +1,5 @@
 // Service Worker for Parig PWA
-const CACHE_NAME = 'parig-pwa-v2';
+const CACHE_NAME = 'parig-pwa-v3';
 const urlsToCache = [
   './',
   './index.html',

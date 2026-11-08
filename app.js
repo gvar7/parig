@@ -1,20 +1,45 @@
-// Parig - Պարիգ: Western Armenian Wordle Clone
+// Parig - Պարիգ: Western Armenian Wordle
 
 const WORDS = {
-  // Common 5-letter words (simplified for demo)
+  // 5-letter Western Armenian words (classical orthography).
+  // "ու" is written as two letters, Ո + Ւ, as in the 38-letter alphabet.
   common: [
-    "APPLE", "BEACH", "BRAIN", "BREAD", "BRUSH", "CHAIR", "CHEST",
-    "CHORD", "CLICK", "CLOCK", "CLOUD", "DANCE", "DIARY", "DRINK",
-    "EARTH", "FEAST", "FIELD", "FRUIT", "GLASS", "GRAPE", "GREEN",
-    "HEART", "HOUSE", "JUICE", "LIGHT", "LEMON", "MELON", "MONEY",
-    "MUSIC", "NIGHT", "OCEAN", "PARTY", "PIZZA", "PHONE", "PLANE",
-    "PLANT", "PLATE", "POWER", "RADIO", "RIVER", "ROBOT", "SHIRT",
-    "SHOES", "SLEEP", "SMILE", "SNACK", "SPACE", "STONE", "STORM",
-    "TABLE", "TIGER", "TOAST", "TRAIN", "TRUCK", "VOICE", "WATER",
-    "WATCH", "WHOLE", "WOMAN", "WORLD", "WRITE", "YOUTH"
+    // Nature & time
+    "ԵՐԿԻՐ", "ԱՇՈՒՆ", "ԳԻՇԵՐ", "ԱՌՏՈՒ", "ԿԷՍՕՐ", "ԱՅՍՕՐ", "ՇԱԲԱԹ", "ՏԱՐԻՔ",
+    "ԱՆՏԱՌ", "ԾԱՂԻԿ", "ՏԵՐԵՒ", "ԱՐՄԱՏ", "ՊՏՈՒՂ", "ՑՈՐԵՆ", "ԲԼՈՒՐ", "ԳԵՏԱԿ",
+    "ՋՐՎԷԺ", "ՃԱՀԻՃ", "ԾՈՎԱՓ", "ՄՐՐԻԿ", "ՄՇՈՒՇ", "ԽԱՒԱՐ", "ՀԱՐԱՒ", "ՑՈՒՐՏ",
+    // Food
+    "ԽՆՁՈՐ", "ԾԻՐԱՆ", "ԽԱՂՈՂ", "ԱՐՄԱՒ", "ԿԱՂԻՆ", "ԼՈԼԻԿ", "ՍԽՏՈՐ", "ԳԱԶԱՐ",
+    "ԲՐԻՆՁ", "ԱԼԻՒՐ", "ԿԱՐԱԳ", "ՊԱՆԻՐ", "ՇԱՔԱՐ", "ՊՂՊԵՂ", "ՔԱՑԱԽ", "ԱՂՑԱՆ",
+    "ԱՊՈՒՐ", "ԼԱՒԱՇ", "ԳԱԹԱՅ", "ՍՈՒՐՃ", "ԽՄԻՉՔ", "ԱՆՈՒՇ",
+    // Home & objects
+    "ՍԵՂԱՆ", "ԴԱՐԱԿ", "ԲԱԺԱԿ", "ԴԱՆԱԿ", "ՏԱՆԻՔ", "ԹՈՒՂԹ", "ՄԱՏԻՏ", "ՄԵԼԱՆ",
+    "ՆԱՄԱԿ", "ԱԿՆՈՑ", "ՇԱՊԻԿ", "ԿՕՇԻԿ", "ԳՆԴԱԿ", "ՄՈՒՐՃ", "ՊԱՐԱՆ", "ՄԿՐԱՏ",
+    "ԲՈՒՐԴ", "ԵՐԿԱԹ", "ԱՐԾԱԹ", "ՊՂԻՆՁ", "ԱՂԻՒՍ", "ԱՊԱԿԻ", "ՆՈՒԷՐ", "ԳՆԱՑՔ",
+    "ՆԱՒԱԿ", "ՎԱՀԱՆ",
+    // Body & people
+    "ԳԼՈՒԽ", "ԱԿԱՆՋ", "ԲԵՐԱՆ", "ՄԱԶԵՐ", "ԱՐԻՒՆ", "ԼԵԶՈՒ", "ԿԵԱՆՔ", "ԱՆՈՒՆ",
+    "ՀԱՅԵՐ", "ԸՆԿԵՐ", "ԴՐԱՑԻ", "ԶԱՒԱԿ", "ԱՂՋԻԿ", "ՊԱՊԻԿ", "ՄԱՄԻԿ", "ՓԵՍԱՅ",
+    "ՏԻԿԻՆ", "ՊԱՐՈՆ", "ԲԺԻՇԿ", "ԵՐԳԻՉ", "ՀՈՎԻՒ", "ԻՇԽԱՆ", "ԱՐՔԱՅ", "ԱՍՊԵՏ",
+    "ՎԻՇԱՊ", "ՀՍԿԱՅ", "ԹԶՈՒԿ", "ԽՈՒՄԲ",
+    // Places & animals
+    "ԴՊՐՈՑ", "ՔԱՂԱՔ", "ՓՈՂՈՑ", "ԱՄՐՈՑ", "ՏԱՃԱՐ", "ԴՐԱԽՏ", "ԱՌԻՒԾ", "ԿԱՏՈՒ",
+    "ՈՉԽԱՐ",
+    // Adjectives
+    "ՊԶՏԻԿ", "ԵՐԿԱՐ", "ԲԱՐԱԿ", "ԲԱՐՁՐ", "ՊԱՐԱՊ", "ԿԱՆԱՉ", "ԴԵՂԻՆ", "ԽԵԼՕՔ",
+    "ՈՒՐԱԽ", "ՏԽՈՒՐ", "ԱՌՈՂՋ", "ՈՒԺԵՂ", "ԱՂՔԱՏ", "ՍՈՒՐԲ",
+    // Abstract & misc
+    "ԱՂՕԹՔ", "ԾԻԾԱՂ", "ԱՐԿԱԾ", "ՀՄԱՅՔ", "ՓԱՓԱՔ", "ԱՐԺԷՔ", "ՊԱՐՏՔ", "ՕԳՈՒՏ",
+    "ՏԱՌԵՐ", "ԲԱՌԵՐ", "ՀԱԶԱՐ", "ԵՐԿՈՒ", "ԶԱՏԻԿ", "ԲԱՐԵՒ", "ԳՈՒՑԷ", "ՅԵՏՈՅ",
+    "ԵՐԲԵՔ", "ՈՐՔԱՆ", "ԻՆՉՈՒ", "ԱՌՋԵՒ", "ՀԵՌՈՒ", "ԴԻՄԱՑ",
+    // Verbs
+    "ԽԱՂԱԼ", "ՍԻՐԵԼ", "ՈՒՏԵԼ", "ԵՐԳԵԼ", "ՊԱՐԵԼ", "ՎԱԶԵԼ", "ԽՕՍԻԼ", "ՆՍՏԻԼ",
+    "ԿԵՆԱԼ", "ՔԱԼԵԼ", "ԵՐԹԱԼ", "ԱՌՆԵԼ", "ԲԱՆԱԼ", "ԳՈՑԵԼ", "ԽՆԴԱԼ", "ՅԻՇԵԼ",
+    "ՈՒԶԵԼ", "ԳՏՆԵԼ", "ՇԻՆԵԼ", "ԼՈՒԱԼ", "ԿՏՐԵԼ", "ՕԳՆԵԼ", "ՓՐԿԵԼ", "ՊԱՀԵԼ",
+    "ՍԿՍԻԼ", "ՇԱՀԻԼ"
   ],
 
-  // Western Armenian translations for UI elements
+  // Western Armenian UI text
   ui: {
     win: "Հաղթանակ!",
     lose: "Վերջ: Բառն էր՝",
@@ -23,6 +48,17 @@ const WORDS = {
     playAgain: "Խաղալ նորից"
   }
 };
+
+// The 38 letters of the Armenian alphabet, laid out in four rows
+const KEYBOARD_ROWS = [
+  ["Ա", "Բ", "Գ", "Դ", "Ե", "Զ", "Է", "Ը", "Թ", "Ժ"],
+  ["Ի", "Լ", "Խ", "Ծ", "Կ", "Հ", "Ձ", "Ղ", "Ճ", "Մ"],
+  ["Յ", "Ն", "Շ", "Ո", "Չ", "Պ", "Ջ", "Ռ", "Ս", "Վ"],
+  ["ENTER", "Տ", "Ր", "Ց", "Ւ", "Փ", "Ք", "Օ", "Ֆ", "BACKSPACE"]
+];
+
+// Uppercase Armenian letters Ա (U+0531) through Ֆ (U+0556)
+const ARMENIAN_LETTER = /^[Ա-Ֆ]$/;
 
 class ParigGame {
   constructor() {
@@ -69,13 +105,7 @@ class ParigGame {
     const keyboardContainer = document.getElementById("keyboard");
     keyboardContainer.innerHTML = "";
 
-    const rows = [
-      ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-      ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-      ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"]
-    ];
-
-    rows.forEach(rowKeys => {
+    KEYBOARD_ROWS.forEach(rowKeys => {
       const rowDiv = document.createElement("div");
       rowDiv.classList.add("keyboard-row");
 
@@ -98,17 +128,25 @@ class ParigGame {
   }
 
   setupEventListeners() {
+    // Physical keyboards need an Armenian layout; the on-screen keyboard works everywhere.
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-      const key = e.key.toUpperCase();
-
-      if (key === "ENTER") {
+      if (e.key === "Enter") {
         this.checkRow();
-      } else if (key === "BACKSPACE") {
+        return;
+      }
+      if (e.key === "Backspace") {
         this.deleteLetter();
-      } else if (/^[A-Z]$/.test(key)) {
-        this.addLetter(key);
+        return;
+      }
+      if (e.key.length > 2) return; // other control keys
+
+      // "և" uppercases to the two letters "ԵՒ", so iterate
+      for (const letter of e.key.toUpperCase()) {
+        if (ARMENIAN_LETTER.test(letter)) {
+          this.addLetter(letter);
+        }
       }
     });
 

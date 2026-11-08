@@ -1,23 +1,25 @@
-# Parig - Պարիգ (Western Armenian Wordle Clone)
+# Parig - Պարիգ (Western Armenian Wordle)
 
-A Wordle-style word puzzle game built in Western Armenian, inspired by [Wordle — The New York Times](https://www.nytimes.com/games/wordle/index.html).
+A Wordle-style word puzzle game in Western Armenian, inspired by [Wordle — The New York Times](https://www.nytimes.com/games/wordle/index.html).
 
 ## Features
 
-- **Wordle-style gameplay**: 6 chances to guess a 5-letter English word
-- **Western Armenian UI**: All interface text is in Western Armenian (հայերեն)
+- **Wordle-style gameplay**: 6 chances to guess a 5-letter Western Armenian word
+- **Armenian keyboard**: On-screen keyboard with all 38 letters of the Armenian alphabet
+- **Western Armenian UI**: All interface text is in Western Armenian (արեւմտահայերէն), classical orthography
 - **PWA-ready**: Install as an app on mobile devices
-- **Keyboard animations**: Satisfying flip animations for correct/present/absent letters
-- **Confetti celebration**: Fun confetti effect when you win!
+- **Flip animations** for correct/present/absent letters, and a **confetti celebration** when you win
 
 ## How to Play
 
 1. Open the game in a browser (desktop or mobile)
-2. Type 5-letter English words using your keyboard
+2. Tap letters on the on-screen keyboard (or type with an Armenian keyboard layout) to enter a 5-letter word, then press ENTER
 3. Guess the secret word within 6 attempts:
    - 🟩 Green = Letter is correct and in the right position
-   - 🟨 Yellow = Letter exists but in wrong position  
-   - ⬛ Gray = Letter doesn't exist in the word
+   - 🟨 Yellow = Letter exists but in the wrong position
+   - ⬛ Gray = Letter is not in the word
+
+Note: «ու» counts as two letters, Ո + Ւ, following the classical 38-letter alphabet.
 
 ## Installation (PWA)
 
@@ -39,7 +41,7 @@ A Wordle-style word puzzle game built in Western Armenian, inspired by [Wordle �
 ```
 parig-pwa/
 ├── index.html          # Main HTML file with Western Armenian UI
-├── app.js              # Game logic and animations
+├── app.js              # Game logic, word list, and animations
 ├── manifest.json       # PWA manifest configuration
 ├── service-worker.js   # Offline caching for PWA
 ├── favicon.svg         # Browser tab icon
@@ -47,32 +49,18 @@ parig-pwa/
 └── icon-512.svg        # 512x512 app icon (PWA)
 ```
 
-## Western Armenian Translations
+## UI Text
 
 | English | Western Armenian |
 |---------|------------------|
-| Correct | Ճիշտ է (Jisht e) |
-| Present | Կա (Ka) |
-| Absent | Անկապ է (Ankap e) |
 | Win! | Հաղթանակ! (Haghtanak!) |
+| Game over, the word was… | Վերջ: Բառն էր՝ (Verch. Parn er) |
+| 5 letters needed | 5 տառ պէտք է (Hink dar bedk e) |
 | New game | Նոր խաղ (Nor khagh) |
 
-## Game Words
+## Word List
 
-The game uses a curated list of 5-letter English words including:
-- APPLE, BEACH, BRAIN, BREAD, BRUSH
-- CHAIR, CHEST, CHORD, CLICK, CLOCK
-- CLOUD, DANCE, DIARY, DRINK, EARTH
-- FEAST, FIELD, FRUIT, GLASS, GRAPE
-- GREEN, HEART, HOUSE, JUICE, LIGHT
-- LEMON, MELON, MONEY, MUSIC, NIGHT
-- OCEAN, PARTY, PIZZA, PHONE, PLANE
-- PLANT, PLATE, POWER, RADIO, RIVER
-- ROBOT, SHIRT, SHOES, SLEEP, SMILE
-- SNACK, SPACE, STONE, STORM, TABLE
-- TIGER, TOAST, TRAIN, TRUCK, VOICE
-- WATER, WATCH, WHOLE, WOMAN, WORLD
-- WRITE, YOUTH
+The secret words are common 5-letter Western Armenian words in classical orthography — nature, food, household objects, people, places, adjectives, and verbs — defined in `WORDS.common` at the top of `app.js`. Add or remove words there; each must be exactly 5 Armenian letters (with ու written as Ո + Ւ).
 
 ## Technical Details
 
