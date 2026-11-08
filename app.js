@@ -45,9 +45,14 @@ const WORDS = {
     lose: "Վերջ: Բառն էր՝",
     notEnough: "5 տառ պէտք է",
     restart: "Նոր խաղ",
-    playAgain: "Խաղալ նորից"
+    playAgain: "Խաղալ նորից",
+    share: "Կիսուիլ",
+    copied: "Պատճէնուեցաւ",
+    copyFailed: "Պատճէնումը չյաջողեցաւ"
   }
 };
+
+const SHARE_SQUARES = ["⬛", "🟨", "🟩"];
 
 // The 38 letters of the Armenian alphabet, laid out in four rows
 const KEYBOARD_ROWS = [
@@ -69,10 +74,13 @@ class ParigGame {
     this.currentTile = 0;
     this.active = false;
     this.revealing = false;
+    this.won = false;
 
     this.boardLetters = []; // letter shown in each tile
     this.tileStates = [];   // 'active' | 'correct' | 'present' | 'absent'
     this.keyboardStates = {}; // letter -> best state so far
+    this.results = [];      // per submitted row: array of 0 absent / 1 present / 2 correct
+    this.toastTimer = null;
   }
 
   init() {
@@ -153,6 +161,10 @@ class ParigGame {
     document.getElementById("restart-btn").addEventListener("click", () => {
       this.startNewGame();
     });
+
+    document.getElementById("share-btn").addEventListener("click", () => {
+      this.share();
+    });
   }
 
   startNewGame() {
@@ -163,12 +175,15 @@ class ParigGame {
     this.currentTile = 0;
     this.active = true;
     this.revealing = false;
+    this.won = false;
 
     this.boardLetters = new Array(this.rows * this.cols).fill("");
     this.tileStates = new Array(this.rows * this.cols).fill("active");
     this.keyboardStates = {};
+    this.results = [];
 
     document.getElementById("message-container").innerHTML = "";
+    this.setShareEnabled(false);
     this.renderBoard();
     this.renderKeyboard();
   }
@@ -234,6 +249,7 @@ class ParigGame {
     const result = this.checkGuess(guess, this.secretWord);
     const stateNames = ["absent", "present", "correct"];
 
+    this.results.push(result);
     this.revealing = true;
 
     // Reveal tiles one by one with a flip animation
@@ -271,7 +287,9 @@ class ParigGame {
   finishRow(guess) {
     if (guess === this.secretWord) {
       this.active = false;
+      this.won = true;
       this.showMessage(WORDS.ui.win, "correct");
+      this.setShareEnabled(true);
       this.addConfetti();
       return;
     }
@@ -282,7 +300,55 @@ class ParigGame {
     if (this.currentRow >= this.rows) {
       this.active = false;
       this.showMessage(`${WORDS.ui.lose} ${this.secretWord}`, "absent");
+      this.setShareEnabled(true);
     }
+  }
+
+  setShareEnabled(enabled) {
+    const btn = document.getElementById("share-btn");
+    btn.disabled = !enabled;
+    btn.classList.toggle("ready", enabled);
+  }
+
+  buildShareText() {
+    const score = this.won ? `${this.results.length}/${this.rows}` : `X/${this.rows}`;
+    const grid = this.results
+      .map(row => row.map(value => SHARE_SQUARES[value]).join(""))
+      .join("\n");
+    const url = `${location.origin}${location.pathname}`;
+
+    return `Պարիգ ${score}\n\n${grid}\n\n${url}`;
+  }
+
+  async share() {
+    if (this.active || this.results.length === 0) return;
+
+    const text = this.buildShareText();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return; // user closed the share sheet
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showToast(WORDS.ui.copied);
+    } catch (err) {
+      this.showToast(WORDS.ui.copyFailed);
+    }
+  }
+
+  showToast(text) {
+    const toast = document.getElementById("toast");
+    toast.textContent = text;
+    toast.classList.add("show");
+
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
   }
 
   checkGuess(guess, correctWord) {
@@ -379,4 +445,5 @@ class ParigGame {
 document.addEventListener("DOMContentLoaded", () => {
   const game = new ParigGame();
   game.init();
+  window.parig = game; // handy for debugging from the console
 });
