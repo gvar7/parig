@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3a7ea2">
+  <meta name="description" content="Parig - Պարիգ: Անգլերեն բառերը գույներով պատճենելու խաղ (Wordle style)">
+  <title>Parig - Պարիգ</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#3a7ea2">
+  <link rel="apple-touch-icon" href="./icon-192.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Parig - Պարիգ">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  
+  <!-- Styles -->
+  <style>
+    :root {
+      --correct: #538d43;
+      --present: #b59f33;
+      --absent: #3a3a3c;
+      --key-bg: #3a3a3c;
+      --key-text: #ffffff;
+      --main-color: #3a7ea2;
+      --main-dark: #2d5b6e;
+      --gray1: #818384;
+      --gray2: #777575;
+      --gray3: #606060;
+      --gray4: #3a3a3c;
+      --gray5: #f9f8f8;
+      --gray6: #e3e2e1;
+      --white: #ffffff;
+      --black: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: var(--gray5);
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      border-bottom: 1px solid #d3d5da;
+      padding: 1rem 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: var(--black);
+    }
+
+    .subtitle {
+      margin-top: 0.25rem;
+      font-size: 1rem;
+      color: var(--gray3);
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    #message-container {
+      height: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .message {
+      font-size: 1.25rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    #message-correct {
+      background-color: var(--correct);
+      color: white;
+    }
+
+    #message-present {
+      background-color: var(--present);
+      color: white;
+    }
+
+    #message-absent {
+      background-color: var(--absent);
+      color: white;
+    }
+
+    .board-container {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background-color: var(--black);
+      border-radius: 4px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.25rem;
+    }
+
+    .tile {
+      background-color: var(--white);
+      border-radius: 0.3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: transform 0.1s;
+    }
+
+    .tile[data-state="active"] {
+      background-color: var(--gray6);
+    }
+
+    .tile[data-state="correct"] {
+      background-color: var(--correct);
+      color: white;
+    }
+
+    .tile[data-state="present"] {
+      background-color: var(--present);
+      color: white;
+    }
+
+    .tile[data-state="absent"] {
+      background-color: var(--gray4);
+      color: white;
+    }
+
+    .tile[data-state="correct"].pop {
+      animation: pop 0.1s;
+    }
+
+    .tile[data-state="present"].pop {
+      animation: pop 0.1s;
+    }
+
+    .tile[data-state="absent"].pop {
+      animation: pop 0.1s;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .keyboard-container {
+      margin-top: 1rem;
+    }
+
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .key {
+      background-color: var(--gray4);
+      color: var(--white);
+      border-radius: 0.3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      cursor: pointer;
+      height: 2.5rem;
+      transition: background-color 0.1s;
+    }
+
+    .key[data-state="correct"] {
+      background-color: var(--correct);
+    }
+
+    .key[data-state="present"] {
+      background-color: var(--present);
+    }
+
+    .key[data-state="absent"] {
+      background-color: var(--gray3);
+    }
+
+    .key.wide {
+      flex: 1;
+      min-width: 2.5rem;
+    }
+
+    #restart-btn {
+      margin-top: 1rem;
+      padding: 0.75rem 2rem;
+      font-size: 1.25rem;
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #restart-btn:hover {
+      background-color: var(--main-dark);
+    }
+
+    .footer {
+      margin-top: auto;
+      padding: 1rem 0;
+      text-align: center;
+      color: var(--gray3);
+      font-size: 0.875rem;
+    }
+
+    /* Animations */
+    @keyframes flipIn {
+      0% { transform: rotateX(90deg); opacity: 0; }
+      100% { transform: rotateX(0deg); opacity: 1; }
+    }
+
+    .tile[data-state="active"] {
+      animation: flipIn 0.25s ease-in-out;
+    }
+
+    @keyframes flipCorrect {
+      0% { background-color: var(--correct); transform: scale(1.1); }
+      50% { background-color: var(--gray6); }
+      100% { background-color: var(--correct); transform: scale(1); }
+    }
+
+    .tile[data-state="correct"].flip {
+      animation: flipCorrect 0.7s;
+    }
+
+    @keyframes flipPresent {
+      0% { background-color: var(--present); transform: scale(1.1); }
+      50% { background-color: var(--gray6); }
+      100% { background-color: var(--present); transform: scale(1); }
+    }
+
+    .tile[data-state="present"].flip {
+      animation: flipPresent 0.7s;
+    }
+
+    @keyframes flipAbsent {
+      0% { background-color: var(--gray3); transform: scale(1.1); }
+      50% { background-color: var(--gray6); }
+      100% { background-color: var(--gray3); transform: scale(1); }
+    }
+
+    .tile[data-state="absent"].flip {
+      animation: flipAbsent 0.7s;
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      h1 { font-size: 2rem; }
+      .subtitle { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Parig - Պարիգ</h1>
+    <p class="subtitle">Անգլերեն բառերը գույներով պատճենելու խաղ (Wordle style)</p>
+  </div>
+
+  <div id="message-container"></div>
+
+  <div class="game-container">
+    <div class="board-container" id="board"></div>
+    
+    <div class="keyboard-container" id="keyboard"></div>
+    
+    <button id="restart-btn">Վերանորոգել</button>
+  </div>
+
+  <div class="footer">
+    <p>Parig - Պարիգ: 6 հնարավորություն, 5 տառան բառ գույներով պատճենելու համար</p>
+  </div>
+
+  <script src="app.js"></script>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registered:', registration);
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
