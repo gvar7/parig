@@ -44,6 +44,7 @@ const WORDS = {
     win: "Հաղթանակ!",
     lose: "Վերջ: Բառն էր՝",
     notEnough: "5 տառ պէտք է",
+    notAWord: "Բառը ցանկին մէջ չէ",
     restart: "Նոր խաղ",
     playAgain: "Խաղալ նորից",
     share: "Կիսուիլ",
@@ -52,6 +53,49 @@ const WORDS = {
     copyFailed: "Պատճէնումը չյաջողեցաւ"
   }
 };
+
+// Extra 5-letter Western Armenian words accepted as guesses (never used as answers).
+// Add to this list to widen what counts as a "proper word".
+const VALID_WORDS = [
+  // Nouns
+  "ԱՐՁԱՆ", "ԱՐՁԱԿ", "ԱՐԾԻՒ", "ԱՐՋԱՌ", "ԲԱԳԻՆ", "ԲԱԺԻՆ", "ԲԱՆԱԿ", "ԲԱՐԴԻ",
+  "ԲԱՐԻՔ", "ԲԱՑԱՏ", "ԲՈՒՐԳ", "ԳԱԼԻՔ", "ԳԱՒԱԹ", "ԳԱՒԱՌ", "ԳԵՏԻՆ", "ԳԵՐԱՆ",
+  "ԳՈՄԷՇ", "ԴԱՓՆԻ", "ԴԻՄԱԿ", "ԵՐՇԻԿ", "ԶԳԵՍՏ", "ԹԱՂԱՐ", "ԹԱՆԱՔ", "ԹԻԹԵՌ",
+  "ԺՈՂՈՎ", "ԻՄԱՍՏ", "ԼԱՅՆՔ", "ԽՈՐԱՆ", "ԾԱՌԱՅ", "ԾՈՎԱԿ", "ԾՈՒՆԿ", "ԿԱԹԻԼ",
+  "ԿԱԾԱՆ", "ԿԱՄԱՐ", "ԿԱՅԱՆ", "ԿԱՅՍՐ", "ԿԱՊԻԿ", "ԿԱՐԱՍ", "ԿԱՐԻՔ", "ԿՈՂՈՎ",
+  "ԿՈՃԱԿ", "ԿՌՆԱԿ", "ՀԱՄԱՐ", "ՀԱՒԱՔ", "ՀԵՐՈՍ", "ՀՐԱՇՔ", "ՁԱՒԱՐ", "ՃԱԿԱՏ",
+  "ՄԱՍԻՍ", "ՄԱՏԱՂ", "ՄԵՂՈՒ", "ՄԵՏԱՂ", "ՄԻՋԱՏ", "ՄՈԽԻՐ", "ՄՈՒՏՔ", "ՆԱԽԻՐ",
+  "ՇԻՐԻՄ", "ՈՍԿՈՐ", "ՈՒՂԵՂ", "ՊԱԼԱՏ", "ՊԱՀԱԿ", "ՊԱՇԱՐ", "ՊԱՊԱԿ", "ՊԱՐԻԿ",
+  "ՊԱՏԻԺ", "ՊԱՏԻՒ", "ՊՏՈՅՏ", "ՋՐՀՈՐ", "ՌՈՒՄԲ", "ՍԱՓՈՐ", "ՍԿԻԶԲ", "ՍԿԻՒՌ",
+  "ՍՊԱՍՔ", "ՍՐԲԻՉ", "ՎԱՐՁՔ", "ՎԻՃԱԿ", "ՏԱՊԱԿ", "ՏԱՐԱԶ", "ՏԵՍԱԿ", "ՏՈՄԱՐ",
+  "ՓԱԿԱՆ", "ՓՈՒՆՋ", "ՓՐԿԻՉ", "ՔԱՆԱԿ", "ՕՐԷՆՔ", "ԼԵԱՐԴ", "ԱԿՌԱՅ", "ԱՊՐԻԼ",
+  "ՄԱՅԻՍ", "ՊԱՀԵՐ", "ՇԱՏԵՐ",
+  // Food & animals
+  "ՓԻԼԱՒ", "ՔԷՊԱՊ", "ՍԻՍԵՌ", "ԲԱՄԻԱ", "ԴԴՈՒՄ", "ԿԵՌԱՍ", "ՍԱԼՈՐ", "ԲԱՆԱՆ",
+  "ԱՔԼՈՐ", "ԱԳՌԱՒ", "ԿԱՔԱՒ", "ՍՈԽԱԿ", "ԵՂՆԻԿ", "ԱՌՆԷՏ", "ՄՈՂԷՍ", "ԾՂՐԻԴ",
+  "ՄԱՏԱԿ",
+  // Adjectives
+  "ԱՄՈՒՐ", "ԱՆՕԹԻ", "ԱՐԴԱՐ", "ԹԵԹԵՒ", "ԽԱՂԱՂ", "ԽՈՆԱՒ", "ԿՈՊԻՏ", "ՀԱՄԵՂ",
+  "ՀՊԱՐՏ", "ՆԻՀԱՐ", "ՏԱՓԱԿ", "ՎԱՅՐԻ", "ՔԱՂՑՐ", "ՊՂՏՈՐ", "ՈՒՂԻՂ", "ՈՒՐԻՇ",
+  "ՄԻՆԱԿ", "ՄՕՏԻԿ", "ԲՈԼՈՐ", "ՆՈՒԱԶ",
+  // Verbs
+  "ԱՅՐԻԼ", "ԲԵՐԵԼ", "ԳՈՌԱԼ", "ԹՈՒԻԼ", "ԹՌՉԻԼ", "ԺՊՏԻԼ", "ԾԱԽԵԼ", "ԾԵԾԵԼ",
+  "ԿԱՊԵԼ", "ԿԱՐԵԼ", "ՂՐԿԵԼ", "ՆԱՅԻԼ", "ՆԵՐԵԼ", "ՇԱՐԵԼ", "ՇՆՉԵԼ", "ՊՏՏԻԼ",
+  "ՋՆՋԵԼ", "ՎԱՐԵԼ", "ՏԱՆԻԼ", "ՑԱՆԵԼ", "ՓԱԿԵԼ", "ՓՈԽԵԼ", "ՔԱՇԵԼ", "ՔՆՆԵԼ",
+  // Pronouns, adverbs & function words
+  "ԱՆԳԱՄ", "ԱՆԴԻՆ", "ԱՌԱՆՑ", "ԱՐԴԷՆ", "ՀԱԶԻՒ", "ՄԻԱՅՆ", "ՅԱՃԱԽ", "ՆՈՐԷՆ",
+  "ԱՍԻԿԱ", "ԱՏԻԿԱ", "ԱՆԻԿԱ", "ԱՍՈՆՔ", "ԱՏՈՆՔ", "ԱՆՈՆՔ", "ԻՐԵՆՔ", "ՈՐՈՒՆ",
+  "ՈՐՊԷՍ", "ՈՒՐԿԷ", "ՀՈՍԿԷ", "ՀՈՆԿԷ", "ԿԱՄԱՑ", "ՎԵՐԵՒ", "ԴՈՒՐՍ", "ԳՐԵԹԷ",
+  // Plurals
+  "ԱՉՔԵՐ", "ՈՏՔԵՐ", "ԾԱՌԵՐ", "ՔԱՐԵՐ", "ԵՐԳԵՐ", "ԱՄՊԵՐ", "ԿԻՆԵՐ", "ԳԻՐԵՐ",
+  "ՍԱՐԵՐ", "ԽԱՂԵՐ", "ԱՐՏԵՐ", "ԳԵՏԵՐ", "ԾՈՎԵՐ", "ՁՈՐԵՐ", "ԲԱԿԵՐ", "ՊԱՏԵՐ",
+  "ՀԱՑԵՐ", "ՃԱՇԵՐ", "ԴԱՍԵՐ", "ՏԷՐԵՐ", "ԽԱՉԵՐ", "ԹԵՒԵՐ", "ՊՈՉԵՐ", "ՀՈՂԵՐ",
+  "ԴՌՆԵՐ", "ԺԱՄԵՐ", "ՆԱՒԵՐ", "ՍՈԽԵՐ", "ՀԱՒԵՐ", "ԿՈՎԵՐ", "ԱՐՋԵՐ", "ՓԻՂԵՐ",
+  "ԾԻՏԵՐ"
+];
+
+// Every word a player may enter: the answers plus the extra valid words
+const DICTIONARY = new Set([...WORDS.common, ...VALID_WORDS]);
 
 const SHARE_SQUARES = ["⬛", "🟨", "🟩"];
 
@@ -187,6 +231,50 @@ class ParigGame {
     this.setShareEnabled(false);
     this.renderBoard();
     this.renderKeyboard();
+    this.updateEnterKey();
+  }
+
+  currentGuess() {
+    const rowStart = this.currentRow * this.cols;
+    return this.boardLetters.slice(rowStart, rowStart + this.currentTile).join("");
+  }
+
+  isValidWord(word) {
+    return DICTIONARY.has(word);
+  }
+
+  // ENTER only looks pressable when the row holds a valid 5-letter word
+  updateEnterKey() {
+    const enterKey = document.getElementById("key-ENTER");
+    if (!enterKey) return;
+
+    const ready = this.active && !this.revealing &&
+      this.currentTile === this.cols && this.isValidWord(this.currentGuess());
+    enterKey.classList.toggle("disabled", !ready);
+  }
+
+  // Shake the row, flash its tiles red and explain why the guess was refused
+  rejectRow(text) {
+    const rowDiv = document.querySelectorAll("#board .row")[this.currentRow];
+    const rowStart = this.currentRow * this.cols;
+    const tiles = [];
+    for (let i = 0; i < this.currentTile; i++) {
+      tiles.push(document.getElementById(`tile-${rowStart + i}`));
+    }
+
+    if (rowDiv) {
+      rowDiv.classList.remove("shake");
+      void rowDiv.offsetWidth; // restart the animation if it is already running
+      rowDiv.classList.add("shake");
+    }
+    tiles.forEach(tile => tile.classList.add("invalid"));
+
+    setTimeout(() => {
+      if (rowDiv) rowDiv.classList.remove("shake");
+      tiles.forEach(tile => tile.classList.remove("invalid"));
+    }, 700);
+
+    this.showMessage(text, "error", true);
   }
 
   renderBoard() {
@@ -225,6 +313,7 @@ class ParigGame {
     this.boardLetters[index] = letter;
     this.renderTile(index);
     this.currentTile++;
+    this.updateEnterKey();
   }
 
   deleteLetter() {
@@ -235,13 +324,19 @@ class ParigGame {
     const index = this.currentRow * this.cols + this.currentTile;
     this.boardLetters[index] = "";
     this.renderTile(index);
+    this.updateEnterKey();
   }
 
   checkRow() {
     if (!this.active || this.revealing) return;
 
     if (this.currentTile < this.cols) {
-      this.showMessage(WORDS.ui.notEnough, "present", true);
+      this.rejectRow(WORDS.ui.notEnough);
+      return;
+    }
+
+    if (!this.isValidWord(this.currentGuess())) {
+      this.rejectRow(WORDS.ui.notAWord);
       return;
     }
 
@@ -252,6 +347,7 @@ class ParigGame {
 
     this.results.push(result);
     this.revealing = true;
+    this.updateEnterKey();
 
     // Reveal tiles one by one with a flip animation
     for (let i = 0; i < this.cols; i++) {
@@ -303,6 +399,8 @@ class ParigGame {
       this.showMessage(`${WORDS.ui.lose} ${this.secretWord}`, "absent");
       this.setShareEnabled(true);
     }
+
+    this.updateEnterKey();
   }
 
   setShareEnabled(enabled) {
