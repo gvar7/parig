@@ -50,7 +50,8 @@ const WORDS = {
     share: "Կիսուիլ",
     finishFirst: "Նախ խաղը աւարտէ",
     copied: "Պատճէնուեցաւ",
-    copyFailed: "Պատճէնումը չյաջողեցաւ"
+    copyFailed: "Պատճէնումը չյաջողեցաւ",
+    tomorrow: "Վաղը նոր բառ"
   }
 };
 
@@ -109,6 +110,26 @@ const KEYBOARD_ROWS = [
 
 // Uppercase Armenian letters Ա (U+0531) through Ֆ (U+0556)
 const ARMENIAN_LETTER = /^[Ա-Ֆ]$/;
+
+// One word per calendar day; progress survives closing the app.
+const STATE_KEY = "parig-state";
+const DAY_EPOCH = new Date(2025, 0, 1); // Jan 1 2025 — day 0
+
+// Local YYYY-MM-DD, so the word changes at the player's own midnight
+function todayKey() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function dailyWord(words) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // Math.round, not floor: a day that contains a DST change is 23 or 25 hours
+  // long, and floor would land on the previous day for every day after spring-forward.
+  const dayIndex = Math.round((today - DAY_EPOCH) / 86400000) % words.length;
+  return words[dayIndex];
+}
 
 class ParigGame {
   constructor() {
@@ -203,8 +224,20 @@ class ParigGame {
       }
     });
 
+    // One word a day: the button only starts a game once the date has rolled over.
     document.getElementById("restart-btn").addEventListener("click", () => {
-      this.startNewGame();
+      if (this.gameDate !== todayKey()) {
+        this.startNewGame();
+      } else {
+        this.showToast(WORDS.ui.tomorrow);
+      }
+    });
+
+    // An app left open past midnight picks up the new word when it is reopened.
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && this.gameDate !== todayKey() && !this.revealing) {
+        this.startNewGame();
+      }
     });
 
     document.getElementById("share-btn").addEventListener("click", () => {
@@ -213,8 +246,10 @@ class ParigGame {
   }
 
   startNewGame() {
-    const words = WORDS.common;
-    this.secretWord = words[Math.floor(Math.random() * words.length)];
+    const date = todayKey();
+    const saved = this.loadState();
+    this.gameDate = date;
+    this.secretWord = (saved && saved.date === date && saved.secretWord) || dailyWord(WORDS.common);
 
     this.currentRow = 0;
     this.currentTile = 0;
@@ -229,9 +264,96 @@ class ParigGame {
 
     document.getElementById("message-container").innerHTML = "";
     this.setShareEnabled(false);
+
+    if (saved && saved.date === date && Array.isArray(saved.guesses)) {
+      this.replayGuesses(saved.guesses);
+    }
+
     this.renderBoard();
     this.renderKeyboard();
     this.updateEnterKey();
+    this.updateRestartButton();
+    this.saveState();
+  }
+
+  loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STATE_KEY) || "null");
+    } catch (err) {
+      return null;
+    }
+  }
+
+  saveState() {
+    const guesses = [];
+    for (let r = 0; r < this.results.length; r++) {
+      guesses.push(this.boardLetters.slice(r * this.cols, (r + 1) * this.cols).join(""));
+    }
+    const state = {
+      date: this.gameDate,
+      secretWord: this.secretWord,
+      guesses,
+      currentRow: this.currentRow,
+      gameOver: !this.active,
+      won: this.won
+    };
+    try {
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+    } catch (err) {
+      // Private mode or full storage: the game still works, it just won't resume.
+    }
+  }
+
+  // Rebuild today's board from the saved guesses, re-scoring each one so the
+  // tile and keyboard colours match what the player saw.
+  replayGuesses(guesses) {
+    const stateNames = ["absent", "present", "correct"];
+    const priority = { absent: 1, present: 2, correct: 3 };
+
+    for (const word of guesses.slice(0, this.rows)) {
+      const guess = Array.from(word); // every Armenian letter is one code point
+      if (guess.length !== this.cols) continue;
+
+      const result = this.checkGuess(guess, this.secretWord);
+      const rowStart = this.currentRow * this.cols;
+      this.results.push(result);
+
+      for (let i = 0; i < this.cols; i++) {
+        const state = stateNames[result[i]];
+        this.boardLetters[rowStart + i] = guess[i];
+        this.tileStates[rowStart + i] = state;
+        const existing = this.keyboardStates[guess[i]];
+        if (!existing || priority[state] > priority[existing]) {
+          this.keyboardStates[guess[i]] = state;
+        }
+      }
+
+      if (word === this.secretWord) {
+        this.active = false;
+        this.won = true;
+        this.showMessage(WORDS.ui.win, "correct");
+        this.setShareEnabled(true);
+        return;
+      }
+
+      this.currentRow++;
+    }
+
+    if (this.currentRow >= this.rows) {
+      this.active = false;
+      this.showMessage(`${WORDS.ui.lose} ${this.secretWord}`, "absent");
+      this.setShareEnabled(true);
+    }
+  }
+
+  // Dimmed while today's word is in play or done; tapping it says a new word comes tomorrow.
+  updateRestartButton() {
+    const btn = document.getElementById("restart-btn");
+    if (!btn) return;
+    const label = this.active ? WORDS.ui.restart : WORDS.ui.tomorrow;
+    btn.classList.toggle("dim", this.gameDate === todayKey());
+    btn.setAttribute("aria-label", label);
+    btn.title = WORDS.ui.tomorrow;
   }
 
   currentGuess() {
@@ -388,6 +510,8 @@ class ParigGame {
       this.showMessage(WORDS.ui.win, "correct");
       this.setShareEnabled(true);
       this.addConfetti();
+      this.saveState();
+      this.updateRestartButton();
       return;
     }
 
@@ -400,6 +524,8 @@ class ParigGame {
       this.setShareEnabled(true);
     }
 
+    this.saveState();
+    this.updateRestartButton();
     this.updateEnterKey();
   }
 
