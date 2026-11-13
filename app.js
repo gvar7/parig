@@ -113,7 +113,7 @@ const ARMENIAN_LETTER = /^[Ա-Ֆ]$/;
 
 // One word per calendar day; progress survives closing the app.
 const STATE_KEY = "parig-state";
-const DAY_EPOCH = new Date(2025, 0, 1); // Jan 1 2025 — day 0
+const DAY_EPOCH = new Date(2026, 10, 12); // Nov 12 2026 = day 0
 
 // Local YYYY-MM-DD, so the word changes at the player's own midnight
 function todayKey() {
