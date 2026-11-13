@@ -291,7 +291,8 @@
       align-items: center;
       font-weight: 700;
       font-size: 1.05rem;
-      text-transform: lowercase; /* display only — the key still types its uppercase letter */
+      font-family: var(--font);
+      text-transform: uppercase; /* match the board tiles' letterforms */
       cursor: pointer;
       user-select: none;
       transition: background-color 0.15s, color 0.15s, opacity 0.15s;
@@ -316,6 +317,7 @@
       flex: 1.6 1 0;
       max-width: 4.2rem;
       font-size: 0.7rem;
+      text-transform: lowercase; /* the ENTER label stays "enter" like the rest of the UI */
     }
 
     /* ENTER is dimmed until the row holds a valid 5-letter word */

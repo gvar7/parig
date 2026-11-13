@@ -1,5 +1,5 @@
 // Service Worker for Parig PWA
-const CACHE_NAME = 'parig-pwa-v11';
+const CACHE_NAME = 'parig-pwa-v12';
 const FONT_CACHE = 'parig-fonts-v1';
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 const urlsToCache = [
